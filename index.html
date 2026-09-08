@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suchitra's Interactive OS - Journal</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* macOS Dynamic Wallpapers blurred backdrop */
+    body {
+      background: radial-gradient(circle at 20% 20%, #ff758c 0%, transparent 45%),
+                  radial-gradient(circle at 80% 20%, #764ba2 0%, transparent 45%),
+                  radial-gradient(circle at 50% 80%, #3b82f6 0%, transparent 50%),
+                  linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      background-attachment: fixed;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    /* Apple Glassmorphism effect */
+    .apple-glass {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .apple-glass-dark {
+      background: rgba(15, 23, 42, 0.70);
+      backdrop-filter: blur(30px) saturate(200%);
+      -webkit-backdrop-filter: blur(30px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    /* iOS Modal Spring Animation */
+    .ios-modal-pop {
+      animation: iosSpring 0.5s cubic-bezier(0.32, 1.2, 0.64, 1) forwards;
+    }
+
+    @keyframes iosSpring {
+      0% { opacity: 0; transform: scale(0.85) translateY(20px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* PPT / macOS Slide Transitions */
+    .slide-in-right {
+      animation: appleSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes appleSlideIn {
+      from { opacity: 0; transform: translateX(60px) scale(0.98); }
+      to { opacity: 1; transform: translateX(0) scale(1); }
+    }
+
+    .slide-out-left {
+      animation: appleSlideOut 0.35s ease forwards;
+    }
+
+    @keyframes appleSlideOut {
+      to { opacity: 0; transform: translateX(-60px) scale(0.98); }
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 flex flex-col justify-between overflow-x-hidden selection:bg-pink-500 selection:text-white">
+
+  <!-- macOS Top Menu Bar -->
+  <header class="w-full apple-glass-dark px-4 py-1 flex justify-between items-center text-xs font-medium text-slate-200 z-40 fixed top-0 left-0 right-0">
+    <div class="flex items-center space-x-4">
+      <span class="text-sm font-bold hover:opacity-80 cursor-pointer"></span>
+      <span class="font-semibold text-white">Journal OS</span>
+      <span class="hidden sm:inline hover:text-white cursor-pointer transition">Widgets</span>
+      <span class="hidden sm:inline hover:text-white cursor-pointer transition">Favorites</span>
+      <span class="hidden sm:inline hover:text-white cursor-pointer transition">Window</span>
+    </div>
+    <div class="flex items-center space-x-3 text-slate-300">
+      <span>🔋 100%</span>
+      <span>🔍</span>
+      <span id="macHeaderClock" class="font-semibold">10:09 AM</span>
+    </div>
+  </header>
+
+  <!-- MAIN DESKTOP WORKSPACE -->
+  <main class="max-w-4xl mx-auto w-full px-4 mt-16 mb-12 my-auto">
+    
+    <!-- 1. IN-DEPTH TIME & DATE WIDGET (iOS Style) -->
+    <section class="mb-8 apple-glass-dark rounded-3xl p-6 shadow-2xl border border-white/20 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <!-- Detailed Clock & Seconds -->
+      <div class="text-center sm:text-left">
+        <div class="text-xs uppercase tracking-widest text-indigo-300 font-bold mb-1" id="clockDay">MONDAY</div>
+        <div class="text-4xl sm:text-6xl font-black tracking-tight text-white flex items-baseline justify-center sm:justify-start gap-2">
+          <span id="detailedClock">10:09:00</span>
+          <span id="clockAmpm" class="text-xl sm:text-2xl font-bold text-pink-400">AM</span>
+        </div>
+        <div class="text-sm text-slate-300 mt-1 font-medium" id="clockDate">September 8, 2026</div>
+      </div>
+
+      <!-- Quick Interactive Status Widget -->
+      <div class="flex items-center gap-3">
+        <div class="apple-glass p-4 rounded-2xl text-center min-w-[100px]">
+          <span class="text-2xl">☀️</span>
+          <span class="block text-xs font-bold text-slate-200 mt-1">Status</span>
+          <span class="block text-[10px] text-emerald-400 font-bold">ACTIVE</span>
+        </div>
+        <div class="apple-glass p-4 rounded-2xl text-center min-w-[100px]">
+          <span class="text-2xl">🎵</span>
+          <span class="block text-xs font-bold text-slate-200 mt-1">Vibe</span>
+          <span class="block text-[10px] text-purple-300 font-bold">CHEERFUL</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. CATEGORY SELECTION WINDOW WITH RICH IMAGES -->
+    <div id="categorySlide" class="apple-glass-dark rounded-3xl shadow-2xl overflow-hidden border border-white/20">
+      <!-- macOS Window Bar -->
+      <div class="px-4 py-3 bg-white/5 border-b border-white/10 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="w-3 h-3 rounded-full bg-red-500/80 hover:bg-red-500 cursor-pointer shadow-sm"></div>
+          <div class="w-3 h-3 rounded-full bg-yellow-500/80 hover:bg-yellow-500 cursor-pointer shadow-sm"></div>
+          <div class="w-3 h-3 rounded-full bg-green-500/80 hover:bg-green-500 cursor-pointer shadow-sm"></div>
+        </div>
+        <span class="text-xs font-semibold text-slate-300">Suchitra's Journal — Categories</span>
+        <div class="w-12"></div>
+      </div>
+
+      <!-- Interactive Image Card Widgets -->
+      <div class="p-6">
+        <h2 class="text-2xl font-bold text-white tracking-tight mb-2 text-center">
+          Explore My Journal 📔
+        </h2>
+        <p class="text-slate-300 text-xs text-center mb-6">
+          Click an interactive card widget below to open sub-categories:
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          
+          <!-- Cartoon Widget -->
+          <div onclick="transitionToCategory('cartoons')" class="apple-glass rounded-2xl overflow-hidden cursor-pointer hover:bg-white/25 active:scale-95 transition duration-200 group shadow-lg border border-white/10">
+            <div class="h-32 overflow-hidden relative">
+              <img src="https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500&auto=format&fit=crop" alt="Cartoons" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+              <span class="absolute top-2 right-2 text-xl bg-black/40 backdrop-blur-md p-1.5 rounded-xl">📺</span>
+            </div>
+            <div class="p-4 text-center">
+              <h3 class="font-bold text-white text-base">Cartoons</h3>
+              <p class="text-xs text-indigo-200 mt-0.5">3 Favorites</p>
+            </div>
+          </div>
+
+          <!-- Movies Widget -->
+          <div onclick="transitionToCategory('movies')" class="apple-glass rounded-2xl overflow-hidden cursor-pointer hover:bg-white/25 active:scale-95 transition duration-200 group shadow-lg border border-white/10">
+            <div class="h-32 overflow-hidden relative">
+              <img src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop" alt="Movies" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+              <span class="absolute top-2 right-2 text-xl bg-black/40 backdrop-blur-md p-1.5 rounded-xl">🎬</span>
+            </div>
+            <div class="p-4 text-center">
+              <h3 class="font-bold text-white text-base">Movies</h3>
+              <p class="text-xs text-indigo-200 mt-0.5">3 Favorites</p>
+            </div>
+          </div>
+
+          <!-- Sports Widget -->
+          <div onclick="transitionToCategory('sports')" class="apple-glass rounded-2xl overflow-hidden cursor-pointer hover:bg-white/25 active:scale-95 transition duration-200 group shadow-lg border border-white/10">
+            <div class="h-32 overflow-hidden relative">
+              <img src="https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=500&auto=format&fit=crop" alt="Sports" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+              <span class="absolute top-2 right-2 text-xl bg-black/40 backdrop-blur-md p-1.5 rounded-xl">⚽</span>
+            </div>
+            <div class="p-4 text-center">
+              <h3 class="font-bold text-white text-base">Sports</h3>
+              <p class="text-xs text-indigo-200 mt-0.5">3 Favorites</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- DYNAMIC SUB-TOPIC WINDOW -->
+    <div id="subTopicSlide" class="hidden apple-glass-dark rounded-3xl shadow-2xl overflow-hidden border border-white/20">
+      <!-- Titlebar -->
+      <div class="px-4 py-3 bg-white/5 border-b border-white/10 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div onclick="transitionBackToMain()" class="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 cursor-pointer shadow-sm"></div>
+          <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+          <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+        </div>
+        <span id="windowTitle" class="text-xs font-semibold text-slate-300">Category View</span>
+        <button onclick="transitionBackToMain()" class="text-xs text-indigo-300 hover:text-white font-medium transition">
+          ‹ Back to Menu
+        </button>
+      </div>
+
+      <!-- Content Grid -->
+      <div class="p-6">
+        <h3 id="slideTitle" class="text-2xl font-bold text-white tracking-tight mb-2"></h3>
+        <p class="text-slate-300 text-xs mb-6">Click any item below to trigger the details popup:</p>
+
+        <div id="subItemGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- iOS IMAGE MODAL POPUP -->
+  <div id="modalOverlay" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div class="ios-modal-pop apple-glass-dark rounded-3xl max-w-sm w-full shadow-2xl border border-white/20 overflow-hidden relative">
+      <!-- Modal Header Image -->
+      <div class="h-44 w-full overflow-hidden relative">
+        <img id="modalImg" src="" alt="Popup Banner" class="w-full h-full object-cover">
+        <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/60 text-white rounded-full p-2 w-8 h-8 flex items-center justify-center text-xs font-bold hover:bg-black transition">
+          ✕
+        </button>
+      </div>
+      
+      <!-- Modal Body -->
+      <div class="p-6 text-center">
+        <h3 id="modalHeading" class="text-2xl font-black text-white mb-3"></h3>
+        
+        <div class="p-4 rounded-2xl bg-white/10 border border-white/10 text-left mb-6">
+          <p id="modalReason" class="text-slate-200 text-sm leading-relaxed"></p>
+        </div>
+
+        <button onclick="closeModal()" class="w-full py-3 bg-blue-600 hover:bg-blue-500 active:scale-95 rounded-xl font-semibold text-white transition duration-150 shadow-lg">
+          Awesome! ✨
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center text-slate-400 text-xs py-4">
+    Designed for interactive macOS & iOS widgets • Suchitra G
+  </footer>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // 1. IN-DEPTH CLOCK FUNCTION
+    function updateClock() {
+      const now = new Date();
+      
+      // Header clock
+      document.getElementById("macHeaderClock").textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // In-depth Widget Clock
+      const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+      let hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      
+      hours = hours % 12;
+      hours = hours ? hours : 12; // Format 12-hour
+      const formattedHours = String(hours).padStart(2, '0');
+
+      document.getElementById("clockDay").textContent = days[now.getDay()];
+      document.getElementById("detailedClock").textContent = `${formattedHours}:${minutes}:${seconds}`;
+      document.getElementById("clockAmpm").textContent = ampm;
+      document.getElementById("clockDate").textContent = `${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 2. JOURNAL DATA WITH RICH IMAGES
+    const journalData = {
+      cartoons: {
+        title: "📺 Favorite Cartoons",
+        items: [
+          { name: "Tom & Jerry", img: "https://images.unsplash.com/photo-1563089145-599997674d42?w=500&auto=format&fit=crop", reason: "Iconic slapstick comedy, orchestra scoring, and timeless cat-and-mouse banter." },
+          { name: "Phineas & Ferb", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500&auto=format&fit=crop", reason: "Creative inventions every episode, catchy musical numbers, and Perry the Platypus!" },
+          { name: "SpongeBob", img: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=500&auto=format&fit=crop", reason: "Nostalgic humor, unforgettable underwater characters, and classic memes." }
+        ]
+      },
+      movies: {
+        title: "🎬 Favorite Movies",
+        items: [
+          { name: "Interstellar", img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop", reason: "Space relativity concepts, Hans Zimmer soundtrack, and emotional family bonds." },
+          { name: "Inception", img: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=500&auto=format&fit=crop", reason: "Brilliant dream architecture, high-stakes action, and dynamic story pacing." },
+          { name: "Spider-Verse", img: "https://images.unsplash.com/photo-1635805737707-575885ab0820?w=500&auto=format&fit=crop", reason: "Revolutionary comic-book 3D animation style, soundtrack, and story execution." }
+        ]
+      },
+      sports: {
+        title: "⚽ Favorite Sports",
+        items: [
+          { name: "Cricket", img: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=500&auto=format&fit=crop", reason: "High-voltage last-over finishes and strategic Test match dynamics." },
+          { name: "Badminton", img: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=500&auto=format&fit=crop", reason: "Lightning-fast court reflexes, jump smashes, and intense endurance rallies." },
+          { name: "Football", img: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500&auto=format&fit=crop", reason: "Global fan enthusiasm, last-minute goals, and tactical team setups." }
+        ]
+      }
+    };
+
+    // 3. SLIDE TRANSITIONS
+    function transitionToCategory(key) {
+      const mainSlide = document.getElementById("categorySlide");
+      const subSlide = document.getElementById("subTopicSlide");
+      const data = journalData[key];
+
+      mainSlide.classList.add("slide-out-left");
+
+      setTimeout(() => {
+        mainSlide.classList.add("hidden");
+        mainSlide.classList.remove("slide-out-left");
+
+        document.getElementById("slideTitle").textContent = data.title;
+        document.getElementById("windowTitle").textContent = data.title;
+        
+        document.getElementById("subItemGrid").innerHTML = data.items.map(item => `
+          <div onclick="openModal('${item.name}', '${item.img}', '${item.reason.replace(/'/g, "\\'")}')" class="apple-glass rounded-2xl overflow-hidden cursor-pointer hover:bg-white/25 active:scale-95 transition duration-200 border border-white/10 group shadow-md">
+            <div class="h-28 overflow-hidden">
+              <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+            </div>
+            <div class="p-3 text-center">
+              <span class="font-bold text-white text-sm block">${item.name}</span>
+              <span class="text-[10px] text-indigo-300 mt-0.5 block">Click to view detail ›</span>
+            </div>
+          </div>
+        `).join('');
+
+        subSlide.classList.remove("hidden");
+        subSlide.classList.add("slide-in-right");
+        
+        fireConfetti();
+      }, 300);
+    }
+
+    function transitionBackToMain() {
+      const mainSlide = document.getElementById("categorySlide");
+      const subSlide = document.getElementById("subTopicSlide");
+
+      subSlide.classList.add("slide-out-left");
+
+      setTimeout(() => {
+        subSlide.classList.add("hidden");
+        subSlide.classList.remove("slide-out-left", "slide-in-right");
+
+        mainSlide.classList.remove("hidden");
+        mainSlide.classList.add("slide-in-right");
+      }, 300);
+    }
+
+    // 4. MODAL POPUP
+    function openModal(title, imgUrl, reason) {
+      document.getElementById("modalHeading").textContent = title;
+      document.getElementById("modalImg").src = imgUrl;
+      document.getElementById("modalReason").textContent = "Why I like this: " + reason;
+      document.getElementById("modalOverlay").classList.remove("hidden");
+      fireConfetti();
+    }
+
+    function closeModal() {
+      document.getElementById("modalOverlay").classList.add("hidden");
+    }
+
+    function fireConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 60,
+          spread: 60,
+          origin: { y: 0.6 },
+          colors: ['#ff758c', '#764ba2', '#3b82f6', '#10b981']
+        });
+      }
+    }
+  </script>
+
+</body>
+</html>
